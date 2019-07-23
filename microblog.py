@@ -1,0 +1,1 @@
+from pyapp import app
