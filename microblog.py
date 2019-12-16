@@ -1,1 +1,1 @@
-from pyapp import app
+from app import app
