@@ -29,11 +29,11 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user is None or not user.check_password(form.password.data):
+        curr_user = User.query.filter_by(username=form.username.data).first()
+        if curr_user is None or not curr_user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
-        login_user(user, remember=form.remember_me.data)
+        login_user(curr_user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -53,10 +53,21 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
+        curr_user = User(username=form.username.data, email=form.email.data)
+        curr_user.set_password(form.password.data)
+        db.session.add(curr_user)
         db.session.commit()
         flash('Congrats! You\'re now registered!')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
+
+@app.route('/user/<username>')
+@login_required
+def user(username):
+    curr_user = User.query.filter_by(username=username).first_or_404()
+    posts = [
+        {'author': curr_user, 'body': 'Test post #1 boiiii'},
+        {'author': curr_user, 'body': 'Test post #2 feller'}
+    ]
+    return render_template('user.html', user=curr_user, posts=posts)
